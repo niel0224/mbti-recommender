@@ -1,0 +1,124 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>AI MBTI 맞춤 활동 추천기</title>
+  <link rel="stylesheet" href="/static/css/style.css">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Pretendard:wght@400;600;700;800&display=swap" rel="stylesheet">
+</head>
+<body>
+  <div class="app-container">
+    <!-- Header -->
+    <header class="app-header">
+      <div class="badge">AI Lifestyle Curator</div>
+      <h1>나만의 AI 맞춤 활동 추천기</h1>
+      <p class="subtitle">15가지 질문으로 나의 경향성을 알아보고, Gemini AI와 Serper 검색이 제안하는 맞춤 활동을 만나보세요.</p>
+      <div class="notice-banner">
+        <span>💡 MBTI는 고정된 성격이 아닌 '참고용 성향'입니다. 언제든 편안한 마음으로 답해보세요.</span>
+      </div>
+    </header>
+
+    <!-- Quiz Section -->
+    <section id="quiz-section" class="card">
+      <div class="progress-wrap">
+        <div class="progress-info">
+          <span id="question-indicator">질문 1 / 15</span>
+          <span id="progress-percent">7%</span>
+        </div>
+        <div class="progress-bar-bg">
+          <div id="progress-bar-fill" class="progress-bar-fill" style="width: 6.66%;"></div>
+        </div>
+      </div>
+
+      <div class="question-container">
+        <span class="question-category" id="question-category">에너지 방향</span>
+        <h2 class="question-text" id="question-text">주말에 시간이 생겼을 때 나의 모습은?</h2>
+        <div class="options-container" id="options-container">
+          <!-- Options rendered dynamically -->
+        </div>
+      </div>
+
+      <div class="quiz-nav">
+        <button id="prev-btn" class="btn btn-secondary" style="visibility: hidden;">이전 질문</button>
+      </div>
+    </section>
+
+    <!-- Loading Section -->
+    <section id="loading-section" class="card loading-card" style="display: none;">
+      <div class="spinner"></div>
+      <h3>당신의 성향을 분석하고 추천을 조합하는 중입니다...</h3>
+      <p class="loading-sub">Gemini가 맞춤 활동을 생성하고, Serper가 실시간 최신 정보를 탐색하고 있어요.</p>
+    </section>
+
+    <!-- Result Section -->
+    <section id="result-section" class="card result-card" style="display: none;">
+      <div class="result-header">
+        <div class="result-badge">진단 결과</div>
+        <h2 id="result-mbti">ENFP</h2>
+        <p id="result-summary" class="result-summary"></p>
+      </div>
+
+      <!-- Ratio Visualizer -->
+      <div class="ratio-box">
+        <h3>나의 성향 밸런스 비율 (%)</h3>
+        <div class="ratio-list">
+          <div class="ratio-item">
+            <div class="ratio-labels"><span>외향 (E) <strong id="ratio-E">0%</strong></span><span>내향 (I) <strong id="ratio-I">0%</strong></span></div>
+            <div class="bar-dual"><div id="bar-E" class="bar-left" style="width: 50%;"></div><div id="bar-I" class="bar-right" style="width: 50%;"></div></div>
+          </div>
+          <div class="ratio-item">
+            <div class="ratio-labels"><span>감각 (S) <strong id="ratio-S">0%</strong></span><span>직관 (N) <strong id="ratio-N">0%</strong></span></div>
+            <div class="bar-dual"><div id="bar-S" class="bar-left" style="width: 50%;"></div><div id="bar-N" class="bar-right" style="width: 50%;"></div></div>
+          </div>
+          <div class="ratio-item">
+            <div class="ratio-labels"><span>사고 (T) <strong id="ratio-T">0%</strong></span><span>감정 (F) <strong id="ratio-F">0%</strong></span></div>
+            <div class="bar-dual"><div id="bar-T" class="bar-left" style="width: 50%;"></div><div id="bar-F" class="bar-right" style="width: 50%;"></div></div>
+          </div>
+          <div class="ratio-item">
+            <div class="ratio-labels"><span>판단 (J) <strong id="ratio-J">0%</strong></span><span>인식 (P) <strong id="ratio-P">0%</strong></span></div>
+            <div class="bar-dual"><div id="bar-J" class="bar-left" style="width: 50%;"></div><div id="bar-P" class="bar-right" style="width: 50%;"></div></div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Activities Section -->
+      <div class="activities-wrapper">
+        <div class="section-title">
+          <span class="icon">✨</span>
+          <h3>추천 활동 & 실시간 검색 정보</h3>
+        </div>
+        <div id="activities-container" class="activities-grid">
+          <!-- Dynamically populated -->
+        </div>
+      </div>
+
+      <!-- Celebrities Section -->
+      <div class="celebrities-wrapper">
+        <div class="section-title">
+          <span class="icon">🌟</span>
+          <h3>어울리는 유명인 / 캐릭터</h3>
+        </div>
+        <div id="celebrities-container" class="celebrities-grid">
+          <!-- Dynamically populated -->
+        </div>
+      </div>
+
+      <!-- Action Buttons -->
+      <div class="result-actions">
+        <button id="copy-btn" class="btn btn-secondary">결과 링크 복사하기</button>
+        <button id="restart-btn" class="btn btn-primary">다시 테스트하기</button>
+      </div>
+
+      <div id="toast" class="toast">링크가 클립보드에 복사되었습니다!</div>
+    </section>
+
+    <!-- Error Toast/Box -->
+    <div id="error-message" class="error-banner" style="display: none;"></div>
+  </div>
+
+  <script src="/static/js/app.js"></script>
+</body>
+</html>
