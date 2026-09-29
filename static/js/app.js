@@ -179,3 +179,28 @@ if ('serviceWorker' in navigator) {
       });
   });
 }
+
+// iOS Device PWA Install Banner Logic
+const isIos = () => {
+  const userAgent = window.navigator.userAgent.toLowerCase();
+  return /iphone|ipad|ipod/.test(userAgent);
+};
+
+const isInStandaloneMode = () => {
+  return ('standalone' in window.navigator) && (window.navigator.standalone);
+};
+
+// If user is on iPhone Safari and NOT already installed
+if (isIos() && !isInStandaloneMode()) {
+  const iosBanner = document.getElementById('ios-install-banner');
+  const closeBtn = document.getElementById('close-ios-banner');
+  
+  if (iosBanner) {
+    iosBanner.style.display = 'flex';
+  }
+  if (closeBtn) {
+    closeBtn.addEventListener('click', () => {
+      iosBanner.style.display = 'none';
+    });
+  }
+}

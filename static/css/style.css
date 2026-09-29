@@ -224,6 +224,58 @@ body {
   cursor: pointer;
 }
 
+/* iOS PWA Install Banner */
+.ios-install-banner {
+  margin: 0 16px 14px;
+  background: #ffffff;
+  border: 1px solid #ffd4dc;
+  border-radius: 12px;
+  padding: 10px 14px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  box-shadow: 0 3px 10px rgba(255, 56, 92, 0.08);
+  animation: fadeIn 0.3s ease;
+}
+
+.ios-banner-left {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.ios-banner-icon {
+  width: 36px;
+  height: 36px;
+  border-radius: 8px;
+  flex-shrink: 0;
+}
+
+.ios-banner-text {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.ios-banner-text strong {
+  font-size: 12.5px;
+  color: #111111;
+}
+
+.ios-banner-text span {
+  font-size: 11px;
+  color: #666666;
+}
+
+.ios-banner-close {
+  background: none;
+  border: none;
+  font-size: 14px;
+  color: #999999;
+  cursor: pointer;
+  padding: 4px;
+}
+
 /* Main Area */
 .ct-main {
   flex: 1;

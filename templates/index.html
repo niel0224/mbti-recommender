@@ -4,13 +4,18 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
   <title>캐치테이블 스타일 AI 맛집 추천</title>
-  <!-- PWA Settings -->
+  <!-- PWA & iOS Safari Settings -->
   <link rel="manifest" href="/static/manifest.json">
   <meta name="theme-color" content="#ff385c">
+  <meta name="mobile-web-app-capable" content="yes">
   <meta name="apple-mobile-web-app-capable" content="yes">
-  <meta name="apple-mobile-web-app-status-bar-style" content="default">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
   <meta name="apple-mobile-web-app-title" content="캐치맛집">
+  <meta name="format-detection" content="telephone=no">
   <link rel="apple-touch-icon" href="/static/icons/icon-192.png">
+  <link rel="apple-touch-icon" sizes="152x152" href="/static/icons/icon-192.png">
+  <link rel="apple-touch-icon" sizes="180x180" href="/static/icons/icon-192.png">
+  <link rel="apple-touch-icon" sizes="167x167" href="/static/icons/icon-192.png">
   <link rel="icon" type="image/png" href="/static/icons/icon-192.png">
 
   <link rel="stylesheet" href="/static/css/style.css">
@@ -58,6 +63,18 @@
         <span class="target-icon">🎯</span>
         <span>현재 위치로</span>
       </div>
+    </div>
+
+    <!-- iOS PWA Install Guide Banner -->
+    <div id="ios-install-banner" class="ios-install-banner" style="display: none;">
+      <div class="ios-banner-left">
+        <img src="/static/icons/icon-192.png" alt="캐치맛집 앱" class="ios-banner-icon">
+        <div class="ios-banner-text">
+          <strong>홈 화면에 앱으로 설치하기</strong>
+          <span>사파리 하단 <strong>공유(⎋)</strong> 누르고 <strong>'홈 화면에 추가'</strong></span>
+        </div>
+      </div>
+      <button id="close-ios-banner" class="ios-banner-close">✕</button>
     </div>
 
     <!-- Main Content Body -->
