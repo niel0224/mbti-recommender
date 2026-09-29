@@ -225,6 +225,66 @@ input[type="text"]:focus {
   color: #1f2937;
 }
 
+/* Menu Gallery */
+.menu-gallery-wrapper {
+  background: #fdfbf7;
+  border: 1px solid #fed7aa;
+  border-radius: 14px;
+  padding: 18px;
+  margin-bottom: 24px;
+}
+
+.menu-image-grid {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 12px;
+}
+
+@media (min-width: 600px) {
+  .menu-image-grid {
+    grid-template-columns: repeat(4, 1fr);
+  }
+}
+
+.food-img-card {
+  position: relative;
+  border-radius: 10px;
+  overflow: hidden;
+  box-shadow: 0 3px 8px rgba(0, 0, 0, 0.08);
+  aspect-ratio: 1 / 1;
+  background: #f1f5f9;
+  cursor: pointer;
+  transition: transform 0.2s ease, box-shadow 0.2s ease;
+}
+
+.food-img-card:hover {
+  transform: translateY(-3px) scale(1.02);
+  box-shadow: 0 8px 16px rgba(0, 0, 0, 0.12);
+}
+
+.food-img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  display: block;
+}
+
+.food-img-caption {
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  background: linear-gradient(transparent, rgba(0, 0, 0, 0.75));
+  color: #ffffff;
+  padding: 8px 8px 6px;
+  font-size: 11px;
+  font-weight: 600;
+  text-align: center;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
 /* Output Cards Grid */
 .output-grid {
   display: grid;

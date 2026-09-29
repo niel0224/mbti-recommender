@@ -65,12 +65,33 @@ function renderResult(result) {
   document.getElementById("result-name").textContent = result.restaurant_name || "추천 맛집";
 
   // 필수 출력 항목 6가지 바인딩
-  document.getElementById("res-open-time").textContent = result.open_time || "가게 사정으로 인한 휴무";
-  document.getElementById("res-break-time").textContent = result.break_time || "가게 사정으로 인한 휴무";
+  document.getElementById("res-open-time").textContent = result.open_time || "";
+  document.getElementById("res-break-time").textContent = result.break_time || "";
   document.getElementById("res-eating-tips").textContent = result.eating_tips || "";
   document.getElementById("res-directions").textContent = result.directions || "";
   document.getElementById("res-review").textContent = result.review || "";
   document.getElementById("res-precautions").textContent = result.precautions || "";
+
+  // Best Menu Photo Gallery
+  const galleryTitle = document.getElementById("gallery-title");
+  const menuImageGrid = document.getElementById("menu-image-grid");
+  menuImageGrid.innerHTML = "";
+
+  if (result.best_menu) {
+    galleryTitle.textContent = `⭐ 제일 평이 좋은 메뉴 '${result.best_menu}' 대표 사진`;
+  }
+
+  if (result.best_menu_images && result.best_menu_images.length > 0) {
+    result.best_menu_images.forEach((img) => {
+      const card = document.createElement("div");
+      card.className = "food-img-card";
+      card.innerHTML = `
+        <img src="${img.imageUrl}" alt="${escapeHtml(img.title)}" class="food-img" loading="lazy" onerror="this.src='https://images.unsplash.com/photo-1546069901-ba9599a7e63c?w=500&auto=format&fit=crop&q=80'">
+        <div class="food-img-caption">${escapeHtml(img.title || result.best_menu)}</div>
+      `;
+      menuImageGrid.appendChild(card);
+    });
+  }
 
   // Serper Search Results
   const serperContainer = document.getElementById("serper-container");
