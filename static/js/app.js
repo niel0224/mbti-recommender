@@ -166,3 +166,16 @@ document.querySelectorAll(".quick-cat-item").forEach((item) => {
     document.getElementById("form-section").scrollIntoView({ behavior: "smooth" });
   });
 });
+
+// PWA Service Worker Registration
+if ('serviceWorker' in navigator) {
+  window.addEventListener('load', () => {
+    navigator.serviceWorker.register('/sw.js')
+      .then((reg) => {
+        console.log('[PWA] Service Worker registered successfully! Scope:', reg.scope);
+      })
+      .catch((err) => {
+        console.warn('[PWA] Service Worker registration failed:', err);
+      });
+  });
+}

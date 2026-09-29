@@ -225,6 +225,12 @@ def index():
     return render_template("index.html")
 
 
+@app.route("/sw.js")
+def service_worker():
+    from flask import send_from_directory
+    return send_from_directory("static", "sw.js", mimetype="application/javascript")
+
+
 @app.route("/recommend", methods=["POST"])
 def recommend():
     try:
