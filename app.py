@@ -15,7 +15,7 @@ logging.basicConfig(
     level=logging.INFO,
     format="[%(asctime)s] %(levelname)s in %(module)s: %(message)s"
 )
-logger = logging.getLogger("mbti_recommender")
+logger = logging.getLogger("restaurant_recommender")
 
 app = Flask(__name__)
 
@@ -32,7 +32,7 @@ else:
 
 def search_serper(query: str, num_results: int = 3):
     """
-    Search real-world information using Serper.dev API
+    Search real-world restaurant information using Serper.dev API
     """
     if not SERPER_API_KEY or SERPER_API_KEY == "your_serper_api_key_here":
         logger.warning("SERPER_API_KEY is not configured. Returning fallback search items.")
@@ -72,54 +72,52 @@ def search_serper(query: str, num_results: int = 3):
         return []
 
 
-def generate_gemini_recommendations(mbti_type: str, ratios: dict):
+def generate_restaurant_recommendation(location, operating_hours, avg_price, best_menu, avg_waiting, representative_menus):
     """
-    Generate tailored activity recommendations and celebrities using Gemini API.
-    Adheres strictly to cautious, flexible MBTI guidelines.
+    Generate restaurant details using Gemini API adhering to the strict constraint:
+    "실시간 정보가 필요한 가게의 운영시간은 사실처럼 생성하지 말고 '가게 사정으로 인한 휴무' 라고 표시한다."
     """
     system_instruction = (
-        "당신은 따뜻하고 신중한 성향 분석 및 라이프스타일 큐레이터입니다.\n"
-        "[MBTI 사용 주의사항]\n"
-        "1. MBTI는 참고용 성향 정보로만 활용하며 사용자의 성격이나 행동을 절대 단정 짓지 마세요.\n"
-        "2. 어조는 항상 '~하는 경향이 있을 수 있습니다', '~한 활동을 즐기실 가능성이 높습니다'와 같이 유연하고 부드럽게 서술하세요.\n"
-        "3. 응답은 반드시 유효한 JSON 형식이어야 합니다. 마크다운 코드블록(```json) 없이 순수 JSON 문자열만 반환하세요."
+        "당신은 신뢰할 수 있고 친절한 전문 맛집 큐레이터 AI입니다.\n"
+        "[필수 제약사항]\n"
+        "실시간 정보가 필요한 가게의 운영시간은 사실처럼 생성하지 말고 '가게 사정으로 인한 휴무' 라고 표시한다.\n"
+        "따라서 오픈시간, 브레이크타임, 운영시간 관련 항목은 임의로 지어내지 말고 "
+        "반드시 '가게 사정으로 인한 휴무'라는 문구를 명시하거나 이에 맞춰 안내해야 합니다.\n"
+        "응답은 반드시 유효한 JSON 형식이어야 하며 마크다운 코드블록 없이 순수 JSON 문자열만 반환하세요."
     )
 
     prompt = f"""
-다음은 사용자의 설문 기반 성향 진단 결과입니다:
-- MBTI 유형: {mbti_type}
-- 성향 비율: E {ratios.get('E', 50)}% / I {ratios.get('I', 50)}%, S {ratios.get('S', 50)}% / N {ratios.get('N', 50)}%, T {ratios.get('T', 50)}% / F {ratios.get('F', 50)}%, J {ratios.get('J', 50)}% / P {ratios.get('P', 50)}%
+다음은 사용자가 입력한 맛집 추천 기준 및 정보입니다:
+- 맛집 위치: {location}
+- 가게의 운영시간(사용자 입력): {operating_hours}
+- 메뉴들의 평균가격: {avg_price}
+- 제일 평이 좋은 메뉴: {best_menu}
+- 평균 웨이팅 시간: {avg_waiting}
+- 맛집들의 대표 메뉴: {representative_menus}
 
 위 정보를 바탕으로 아래 구조의 JSON 데이터를 생성해 주세요:
 {{
-  "summary": "{mbti_type} 성향을 가진 분들의 유연한 성향 요약 (2-3문장, 부드러운 어조)",
-  "activities": [
-    {{
-      "title": "활동 이름 (예: 조용한 북카페 탐방, 러닝 크루 참여 등)",
-      "reason": "해당 성향 분들이 이 활동에서 편안함이나 즐거움을 느끼기 쉬운 이유 (~할 가능성이 있습니다 체)",
-      "search_keyword": "네이버나 구글에서 실제 장소나 모임을 찾기 좋은 한국어 검색 키워드 (예: 서울 조용한 북카페 추천)"
-    }}
-  ],
-  "celebrities": [
-    {{
-      "name": "유명인 또는 친숙한 캐릭터 이름",
-      "description": "이 유형의 매력적인 특성을 잘 보여주는 부분 소개 (~하는 모습으로 사랑받는 경향이 있습니다 체)"
-    }}
-  ]
+  "restaurant_name": "추천 맛집 상호명 또는 테마명 (예: {location} 인기 맛집)",
+  "open_time": "가게 사정으로 인한 휴무",
+  "break_time": "가게 사정으로 인한 휴무 (방문 전 매장 문의 권장)",
+  "eating_tips": "이곳의 대표 메뉴와 베스트 메뉴를 가장 맛있게 먹는 구체적인 방법 및 꿀조합 팁 (2~3문장)",
+  "directions": "{location} 기준 대중교통 및 도보로 찾아오는 길 안내 (상세하고 친절하게)",
+  "review": "방문객들의 실제 만족 포인트와 솔직한 분위기 총평 리뷰 (3문장 내외)",
+  "precautions": "웨이팅({avg_waiting}), 재료 소진, 주차, 예약 등 방문 시 주의해야 할 핵심 주의사항 (2~3가지)",
+  "search_keyword": "{location} {best_menu} 맛집"
 }}
 
-요구 조건:
-1. activities는 3개~4개 포함해 주세요.
-2. celebrities는 2명~3명 포함해 주세요.
-3. 각 활동의 search_keyword는 구체적인 검색이 가능한 단어여야 합니다.
+[중요 제약 재확인]
+- open_time은 반드시 '가게 사정으로 인한 휴무'라고 표시하세요.
+- break_time 역시 운영시간 관련 실시간 정보이므로 사실처럼 임의 생성하지 말고 '가게 사정으로 인한 휴무'를 포함하여 표기하세요.
 """
 
     if not gemini_client:
         logger.info("Using rich mock response because GEMINI_API_KEY is not set.")
-        return get_fallback_recommendations(mbti_type, ratios)
+        return get_fallback_restaurant(location, operating_hours, avg_price, best_menu, avg_waiting, representative_menus)
 
     try:
-        logger.info(f"Gemini API Request for MBTI: {mbti_type}")
+        logger.info(f"Gemini API Request for Restaurant at {location}")
         response = gemini_client.models.generate_content(
             model="gemini-2.5-flash",
             contents=prompt,
@@ -130,44 +128,26 @@ def generate_gemini_recommendations(mbti_type: str, ratios: dict):
             )
         )
         data = json.loads(response.text)
+        # Ensure constraint strictly
+        if "가게 사정으로 인한 휴무" not in data.get("open_time", ""):
+            data["open_time"] = "가게 사정으로 인한 휴무"
         return data
     except Exception as e:
         logger.error(f"Gemini API generation failed: {str(e)}")
-        return get_fallback_recommendations(mbti_type, ratios)
+        return get_fallback_restaurant(location, operating_hours, avg_price, best_menu, avg_waiting, representative_menus)
 
 
-def get_fallback_recommendations(mbti_type: str, ratios: dict):
-    """Fallback recommendation when API is unreachable or key not set"""
-    is_e = ratios.get("E", 50) >= 50
+def get_fallback_restaurant(location, operating_hours, avg_price, best_menu, avg_waiting, representative_menus):
+    """Fallback restaurant recommendation strictly complying with the constraint"""
     return {
-        "summary": f"{mbti_type} 성향은 다양한 상황에서 유연하게 자신의 에너지를 발휘하는 경향이 있을 수 있습니다. 상황에 따라 새로운 아이디어를 탐색하거나 차분한 집중을 즐기실 가능성이 높습니다.",
-        "activities": [
-            {
-                "title": "테마가 있는 원데이 클래스 참여" if is_e else "아늑하고 조용한 독립서점 탐방",
-                "reason": "새로운 사람들과 자연스럽게 교류하며 활력을 얻으실 가능성이 높습니다." if is_e else "혼자만의 사색과 지적 호기심을 평온하게 채우는 경향이 있을 수 있습니다.",
-                "search_keyword": "원데이 클래스 공방 추천" if is_e else "조용한 독립서점 북카페 추천"
-            },
-            {
-                "title": "풍경이 아름다운 산책로 걷기",
-                "reason": "생각을 정리하고 일상에 신선한 영감을 불어넣는 데 도움이 될 수 있습니다.",
-                "search_keyword": "도심 힐링 산책로 코스"
-            },
-            {
-                "title": "취향 중심의 소규모 팝업 전시 관람",
-                "reason": "감각적이고 새로운 자극을 통해 감성을 재충전하는 시간을 가지실 가능성이 있습니다.",
-                "search_keyword": "이번 주 팝업스토어 전시 일정"
-            }
-        ],
-        "celebrities": [
-            {
-                "name": "대표 인물 A",
-                "description": "열정적이고 진정성 있는 태도로 주위 사람들에게 긍정적인 영감을 주는 경향이 있습니다."
-            },
-            {
-                "name": "대표 인물 B",
-                "description": "자신만의 고유한 시각으로 차분하게 결과물을 완성해 나가는 매력을 보여줍니다."
-            }
-        ]
+        "restaurant_name": f"{location} 추천 명품 맛집",
+        "open_time": "가게 사정으로 인한 휴무",
+        "break_time": "가게 사정으로 인한 휴무",
+        "eating_tips": f"가장 평이 좋은 '{best_menu}'는 특제 소스를 곁들여 첫 입을 드셔보신 후, 함께 나오는 반찬과 조합해 드시면 감칠맛이 극대화됩니다. 대표 메뉴인 {representative_menus}와 번갈아 맛보시면 물리지 않고 풍성한 식사를 즐기실 수 있습니다.",
+        "directions": f"{location} 인근 지하철역 또는 버스 정류장에서 도보 5~7분 거리에 위치해 있습니다. 메인 먹자골목 중심 교차로에서 우측 골목으로 진입하시면 쉽게 찾으실 수 있습니다.",
+        "review": f"평균 가격대({avg_price}) 대비 음식의 정갈함과 신선도가 탁월하여 현지인과 방문객 모두에게 찬사를 받는 곳입니다. 정갈한 인테리어와 친절한 응대로 기분 좋은 식사 경험을 선사합니다.",
+        "precautions": f"평균 웨이팅 시간이 약 {avg_waiting} 내외로 소요될 수 있으므로 피크 시간대에는 여유를 갖고 방문하세요. 또한 주차 공간이 협소할 수 있어 대중교통 이용을 권장하며, 재료 조기 소진 시 조기 마감될 수 있습니다.",
+        "search_keyword": f"{location} {best_menu} 맛집"
     }
 
 
@@ -184,50 +164,49 @@ def recommend():
             logger.warning("Empty request payload received.")
             return jsonify({"success": False, "message": "요청 데이터가 없습니다."}), 400
 
-        mbti_type = data.get("mbti", "").strip().upper()
-        ratios = data.get("ratios", {})
+        # Input extraction
+        location = data.get("location", "").strip()
+        operating_hours = data.get("operating_hours", "").strip() or "별도 문의 필요"
+        avg_price = data.get("avg_price", "").strip()
+        best_menu = data.get("best_menu", "").strip()
+        avg_waiting = data.get("avg_waiting", "").strip()
+        representative_menus = data.get("representative_menus", "").strip()
 
-        # Validation
-        valid_letters = [
-            ("E", "I"),
-            ("S", "N"),
-            ("T", "F"),
-            ("J", "P")
-        ]
-        if len(mbti_type) != 4:
-            return jsonify({"success": False, "message": "유효하지 않은 MBTI 형식입니다 (4자리 필요)."}), 400
+        # Input validation
+        if not location:
+            return jsonify({"success": False, "message": "맛집 위치를 입력해 주세요."}), 400
+        if not avg_price:
+            return jsonify({"success": False, "message": "메뉴들의 평균가격을 입력해 주세요."}), 400
+        if not best_menu:
+            return jsonify({"success": False, "message": "제일 평이 좋은 메뉴를 입력해 주세요."}), 400
+        if not avg_waiting:
+            return jsonify({"success": False, "message": "평균 웨이팅 시간을 입력해 주세요."}), 400
+        if not representative_menus:
+            return jsonify({"success": False, "message": "맛집들의 대표 메뉴를 입력해 주세요."}), 400
 
-        for i, pair in enumerate(valid_letters):
-            if mbti_type[i] not in pair:
-                return jsonify({"success": False, "message": f"MBTI 지표가 잘못되었습니다: {mbti_type}"}), 400
-
-        logger.info(f"POST /recommend received: MBTI={mbti_type}, Ratios={ratios}")
+        logger.info(f"POST /recommend received: Location='{location}', Best='{best_menu}', Price='{avg_price}'")
 
         # 1. Gemini Content Generation
-        result_data = generate_gemini_recommendations(mbti_type, ratios)
+        result_data = generate_restaurant_recommendation(
+            location, operating_hours, avg_price, best_menu, avg_waiting, representative_menus
+        )
 
-        # 2. Serper Search for each activity keyword
-        activities = result_data.get("activities", [])
-        for act in activities:
-            kw = act.get("search_keyword")
-            if kw:
-                act["real_time_info"] = search_serper(kw, num_results=2)
-            else:
-                act["real_time_info"] = []
+        # 2. Serper Search for live info
+        search_kw = result_data.get("search_keyword") or f"{location} {best_menu} 맛집"
+        real_time_info = search_serper(search_kw, num_results=3)
+        result_data["real_time_info"] = real_time_info
 
-        logger.info("Recommendation successfully generated and enriched.")
+        logger.info("Restaurant recommendation successfully created.")
         return jsonify({
             "success": True,
-            "mbti": mbti_type,
-            "ratios": ratios,
             "result": result_data
         })
 
     except Exception as e:
         logger.error(f"Error processing /recommend: {str(e)}", exc_info=True)
-        return jsonify({"success": False, "message": "추천을 생성하는 도중 서버 오류가 발생했습니다."}), 500
+        return jsonify({"success": False, "message": "맛집 추천을 생성하는 도중 오류가 발생했습니다."}), 500
 
 
 if __name__ == "__main__":
-    logger.info("Starting MBTI Recommender Flask Server...")
+    logger.info("Starting Restaurant Recommender Flask Server...")
     app.run(host="127.0.0.1", port=5000, debug=True)
