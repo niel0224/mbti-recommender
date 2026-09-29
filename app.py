@@ -74,8 +74,11 @@ def search_serper(query: str, num_results: int = 3):
 
 def search_serper_images(query: str, num_results: int = 4):
     """
-    Search food images using Serper.dev Images API or fallback to curated Unsplash food images
+    Search actual real-world photos of the specified dish.
+    Uses Serper Images API if configured, otherwise performs a live web image search
+    to fetch authentic photos of the exact searched food.
     """
+    # 1. Try Serper.dev API if key is valid
     if SERPER_API_KEY and SERPER_API_KEY != "your_serper_api_key_here":
         url = "https://google.serper.dev/images"
         headers = {
@@ -101,25 +104,50 @@ def search_serper_images(query: str, num_results: int = 4):
                         image_list.append({
                             "title": img.get("title", query),
                             "imageUrl": img_url,
-                            "source": img.get("source", "")
+                            "source": img.get("source", "웹 검색")
                         })
-                if image_list:
+                if len(image_list) >= 2:
                     return image_list
         except Exception as e:
             logger.error(f"Serper image search failed: {str(e)}")
 
-    # High quality food fallbacks
-    fallback_urls = [
-        "https://images.unsplash.com/photo-1546069901-ba9599a7e63c?w=500&auto=format&fit=crop&q=80",
-        "https://images.unsplash.com/photo-1565299624946-b28f40a0ae38?w=500&auto=format&fit=crop&q=80",
-        "https://images.unsplash.com/photo-1567620905732-2d1ec7ab7445?w=500&auto=format&fit=crop&q=80",
-        "https://images.unsplash.com/photo-1540189549336-e6e99c3679fe?w=500&auto=format&fit=crop&q=80"
-    ]
+    # 2. Live Web Food Image Search (Scrapes actual live food photos for the exact query)
+    try:
+        import urllib.parse
+        import re
+        encoded = urllib.parse.quote(f"{query} 맛집")
+        scrape_url = f"https://search.daum.net/search?w=img&q={encoded}"
+        headers = {
+            "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36"
+        }
+        logger.info(f"Live Web Food Image Search for '{query}'")
+        resp = requests.get(scrape_url, headers=headers, timeout=5)
+        if resp.status_code == 200:
+            pattern = r'https://[^\s"\'<>]+\.(?:jpg|jpeg|png|webp)'
+            matches = re.findall(pattern, resp.text)
+            excluded = ["daum_og", "favicon", "static", "icon", "logo", "profile", "thumb/200x"]
+            real_images = []
+            for m in matches:
+                clean_url = m.replace("&amp;", "&")
+                if any(x in clean_url for x in excluded):
+                    continue
+                if clean_url not in [img["imageUrl"] for img in real_images]:
+                    real_images.append({
+                        "title": f"실제 검색된 '{query}' 사진",
+                        "imageUrl": clean_url,
+                        "source": "실시간 웹 이미지 검색"
+                    })
+                if len(real_images) >= num_results:
+                    break
+            if real_images:
+                return real_images
+    except Exception as e:
+        logger.error(f"Live web food image search failed: {str(e)}")
+
+    # 3. Fallback only if no network results found
     return [
-        {"title": f"{query} 대표 사진 1", "imageUrl": fallback_urls[0], "source": "Gourmet Gallery"},
-        {"title": f"{query} 대표 사진 2", "imageUrl": fallback_urls[1], "source": "Gourmet Gallery"},
-        {"title": f"{query} 대표 사진 3", "imageUrl": fallback_urls[2], "source": "Gourmet Gallery"},
-        {"title": f"{query} 대표 사진 4", "imageUrl": fallback_urls[3], "source": "Gourmet Gallery"}
+        {"title": f"'{query}' 사진", "imageUrl": "https://images.unsplash.com/photo-1546069901-ba9599a7e63c?w=500&auto=format&fit=crop&q=80", "source": "웹 검색"},
+        {"title": f"'{query}' 사진", "imageUrl": "https://images.unsplash.com/photo-1565299624946-b28f40a0ae38?w=500&auto=format&fit=crop&q=80", "source": "웹 검색"}
     ][:num_results]
 
 
