@@ -72,26 +72,7 @@ function renderResult(result) {
   document.getElementById("res-review").textContent = result.review || "";
   document.getElementById("res-precautions").textContent = result.precautions || "";
 
-  // Best Menu Photo Gallery
-  const galleryTitle = document.getElementById("gallery-title");
-  const menuImageGrid = document.getElementById("menu-image-grid");
-  menuImageGrid.innerHTML = "";
 
-  if (result.best_menu) {
-    galleryTitle.textContent = `⭐ 제일 평이 좋은 메뉴 '${result.best_menu}' 대표 사진`;
-  }
-
-  if (result.best_menu_images && result.best_menu_images.length > 0) {
-    result.best_menu_images.forEach((img) => {
-      const card = document.createElement("div");
-      card.className = "ct-img-card";
-      card.innerHTML = `
-        <img src="${img.imageUrl}" alt="${escapeHtml(img.title)}" loading="lazy" onerror="this.src='https://images.unsplash.com/photo-1546069901-ba9599a7e63c?w=500&auto=format&fit=crop&q=80'">
-        <div class="ct-img-label">${escapeHtml(img.title || result.best_menu)}</div>
-      `;
-      menuImageGrid.appendChild(card);
-    });
-  }
 
   // Serper Search Results
   const serperContainer = document.getElementById("serper-container");
