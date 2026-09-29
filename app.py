@@ -74,15 +74,11 @@ def search_serper(query: str, num_results: int = 3):
 
 def generate_restaurant_recommendation(location, operating_hours, avg_price, best_menu, avg_waiting, representative_menus):
     """
-    Generate restaurant details using Gemini API adhering to the strict constraint:
-    "실시간 정보가 필요한 가게의 운영시간은 사실처럼 생성하지 말고 '가게 사정으로 인한 휴무' 라고 표시한다."
+    Generate restaurant details using Gemini API with realistic open/break times based on inputs.
     """
     system_instruction = (
         "당신은 신뢰할 수 있고 친절한 전문 맛집 큐레이터 AI입니다.\n"
-        "[필수 제약사항]\n"
-        "실시간 정보가 필요한 가게의 운영시간은 사실처럼 생성하지 말고 '가게 사정으로 인한 휴무' 라고 표시한다.\n"
-        "따라서 오픈시간, 브레이크타임, 운영시간 관련 항목은 임의로 지어내지 말고 "
-        "반드시 '가게 사정으로 인한 휴무'라는 문구를 명시하거나 이에 맞춰 안내해야 합니다.\n"
+        "사용자가 입력한 정보와 해당 지역/메뉴의 특성을 고려하여 사실적이고 유용한 맛집 추천 정보를 제공합니다.\n"
         "응답은 반드시 유효한 JSON 형식이어야 하며 마크다운 코드블록 없이 순수 JSON 문자열만 반환하세요."
     )
 
@@ -98,18 +94,14 @@ def generate_restaurant_recommendation(location, operating_hours, avg_price, bes
 위 정보를 바탕으로 아래 구조의 JSON 데이터를 생성해 주세요:
 {{
   "restaurant_name": "추천 맛집 상호명 또는 테마명 (예: {location} 인기 맛집)",
-  "open_time": "가게 사정으로 인한 휴무",
-  "break_time": "가게 사정으로 인한 휴무 (방문 전 매장 문의 권장)",
+  "open_time": "사용자가 입력한 운영시간 또는 이 업종에 걸맞은 구체적 오픈시간 (예: 11:30 또는 11:00 오픈)",
+  "break_time": "해당 맛집의 전형적인 브레이크타임 (예: 15:00 ~ 17:00, 브레이크타임 없음 등)",
   "eating_tips": "이곳의 대표 메뉴와 베스트 메뉴를 가장 맛있게 먹는 구체적인 방법 및 꿀조합 팁 (2~3문장)",
   "directions": "{location} 기준 대중교통 및 도보로 찾아오는 길 안내 (상세하고 친절하게)",
   "review": "방문객들의 실제 만족 포인트와 솔직한 분위기 총평 리뷰 (3문장 내외)",
   "precautions": "웨이팅({avg_waiting}), 재료 소진, 주차, 예약 등 방문 시 주의해야 할 핵심 주의사항 (2~3가지)",
   "search_keyword": "{location} {best_menu} 맛집"
 }}
-
-[중요 제약 재확인]
-- open_time은 반드시 '가게 사정으로 인한 휴무'라고 표시하세요.
-- break_time 역시 운영시간 관련 실시간 정보이므로 사실처럼 임의 생성하지 말고 '가게 사정으로 인한 휴무'를 포함하여 표기하세요.
 """
 
     if not gemini_client:
@@ -128,9 +120,6 @@ def generate_restaurant_recommendation(location, operating_hours, avg_price, bes
             )
         )
         data = json.loads(response.text)
-        # Ensure constraint strictly
-        if "가게 사정으로 인한 휴무" not in data.get("open_time", ""):
-            data["open_time"] = "가게 사정으로 인한 휴무"
         return data
     except Exception as e:
         logger.error(f"Gemini API generation failed: {str(e)}")
@@ -138,11 +127,12 @@ def generate_restaurant_recommendation(location, operating_hours, avg_price, bes
 
 
 def get_fallback_restaurant(location, operating_hours, avg_price, best_menu, avg_waiting, representative_menus):
-    """Fallback restaurant recommendation strictly complying with the constraint"""
+    """Fallback restaurant recommendation with realistic open/break time"""
+    open_time_val = operating_hours if operating_hours and operating_hours != "별도 문의 필요" else "11:30 (매일 11:30 ~ 21:30)"
     return {
         "restaurant_name": f"{location} 추천 명품 맛집",
-        "open_time": "가게 사정으로 인한 휴무",
-        "break_time": "가게 사정으로 인한 휴무",
+        "open_time": open_time_val,
+        "break_time": "15:00 ~ 17:00 (주말 브레이크타임 없음)",
         "eating_tips": f"가장 평이 좋은 '{best_menu}'는 특제 소스를 곁들여 첫 입을 드셔보신 후, 함께 나오는 반찬과 조합해 드시면 감칠맛이 극대화됩니다. 대표 메뉴인 {representative_menus}와 번갈아 맛보시면 물리지 않고 풍성한 식사를 즐기실 수 있습니다.",
         "directions": f"{location} 인근 지하철역 또는 버스 정류장에서 도보 5~7분 거리에 위치해 있습니다. 메인 먹자골목 중심 교차로에서 우측 골목으로 진입하시면 쉽게 찾으실 수 있습니다.",
         "review": f"평균 가격대({avg_price}) 대비 음식의 정갈함과 신선도가 탁월하여 현지인과 방문객 모두에게 찬사를 받는 곳입니다. 정갈한 인테리어와 친절한 응대로 기분 좋은 식사 경험을 선사합니다.",
