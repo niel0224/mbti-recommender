@@ -2,166 +2,321 @@
 <html lang="ko">
 <head>
   <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>AI 맛집 맞춤 추천기</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <title>캐치테이블 스타일 AI 맛집 추천</title>
   <link rel="stylesheet" href="/static/css/style.css">
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Pretendard:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Pretendard:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
 </head>
 <body>
-  <div class="app-container">
-    <!-- Header -->
-    <header class="app-header">
-      <div class="badge">🍽️ AI Gourmet Curator</div>
-      <h1>AI 맛집 추천기</h1>
-      <p class="subtitle">원하는 위치와 취향 정보를 입력하면 Gemini AI와 Serper 검색이 최적의 맛집 큐레이션을 제공합니다.</p>
+  <div class="mobile-frame">
+    <!-- Top CatchTable App Header -->
+    <header class="ct-header">
+      <div class="ct-header-top">
+        <div class="ct-logo-wrap">
+          <div class="ct-logo-circle">C</div>
+        </div>
+        <div class="ct-search-bar" id="search-trigger">
+          <span class="ct-search-icon">🔍</span>
+          <span class="ct-search-placeholder">찾고 있는 맛집이 있나요?</span>
+        </div>
+        <div class="ct-header-icons">
+          <button class="ct-icon-btn" title="히스토리">🕒</button>
+          <button class="ct-icon-btn badge-dot" title="알림">🔔</button>
+        </div>
+      </div>
+
+      <!-- Category Nav Tabs -->
+      <nav class="ct-nav-tabs">
+        <a href="#" class="nav-tab active">홈</a>
+        <a href="#" class="nav-tab">🎪 야장지도</a>
+        <a href="#" class="nav-tab">캐치단독</a>
+        <a href="#" class="nav-tab">캐치더혜택</a>
+        <a href="#" class="nav-tab">웨이팅TOP100</a>
+        <a href="#" class="nav-tab">피드</a>
+      </nav>
     </header>
 
-    <!-- Input Form Section -->
-    <section id="form-section" class="card">
-      <h2 class="form-title">맛집 탐색 조건 입력</h2>
-      <p class="form-desc">궁금하거나 찾고자 하는 맛집 조건을 자유롭게 적어주세요.</p>
-
-      <form id="restaurant-form">
-        <div class="form-group">
-          <label for="location">📍 맛집 위치 <span class="required">*</span></label>
-          <input type="text" id="location" placeholder="예: 서울 강남역, 부산 해운대, 성수동" required>
-        </div>
-
-        <div class="form-row">
-          <div class="form-group">
-            <label for="operating_hours">⏰ 가게의 운영시간</label>
-            <input type="text" id="operating_hours" placeholder="예: 11:30 ~ 21:00 또는 모름">
-          </div>
-          <div class="form-group">
-            <label for="avg_price">💰 메뉴들의 평균가격 <span class="required">*</span></label>
-            <input type="text" id="avg_price" placeholder="예: 15,000원 ~ 20,000원" required>
-          </div>
-        </div>
-
-        <div class="form-row">
-          <div class="form-group">
-            <label for="best_menu">⭐ 제일 평이 좋은 메뉴 <span class="required">*</span></label>
-            <input type="text" id="best_menu" placeholder="예: 트러플 크림 뇨끼, 숙성 한우 등심" required>
-          </div>
-          <div class="form-group">
-            <label for="avg_waiting">⏳ 평균 웨이팅 시간 <span class="required">*</span></label>
-            <input type="text" id="avg_waiting" placeholder="예: 약 30분, 주말 1시간, 웨이팅 없음" required>
-          </div>
-        </div>
-
-        <div class="form-group">
-          <label for="representative_menus">🍲 맛집들의 대표 메뉴 <span class="required">*</span></label>
-          <input type="text" id="representative_menus" placeholder="예: 화덕피자, 파스타, 샐러드 세트" required>
-        </div>
-
-        <button type="submit" id="submit-btn" class="btn btn-primary submit-btn">맛집 추천 생성하기</button>
-      </form>
-    </section>
-
-    <!-- Loading Section -->
-    <section id="loading-section" class="card loading-card" style="display: none;">
-      <div class="spinner"></div>
-      <h3>AI가 조건에 맞는 최적의 맛집을 분석 중입니다...</h3>
-      <p class="loading-sub">Gemini가 맛있게 먹는 법과 상세 가이드를 정리하고, Serper가 실시간 최신 정보를 확인하고 있습니다.</p>
-    </section>
-
-    <!-- Result Section -->
-    <section id="result-section" class="card result-card" style="display: none;">
-      <div class="result-header">
-        <div class="result-badge">AI 추천 리포트</div>
-        <h2 id="result-name">추천 맛집</h2>
+    <!-- Location Filter Bar -->
+    <div class="ct-location-bar">
+      <div class="location-select">
+        <span class="pin-icon">📍</span>
+        <strong id="display-location">전국</strong>
+        <span class="arrow-down">⌄</span>
       </div>
-
-      <!-- Best Menu Photo Gallery -->
-      <div class="menu-gallery-wrapper" id="menu-gallery-container">
-        <div class="section-title">
-          <span class="icon">📸</span>
-          <h3 id="gallery-title">제일 평이 좋은 메뉴 사진</h3>
-        </div>
-        <div class="menu-image-grid" id="menu-image-grid">
-          <!-- Dynamically populated with images -->
-        </div>
+      <div class="current-loc-btn">
+        <span class="target-icon">🎯</span>
+        <span>현재 위치로</span>
       </div>
+    </div>
 
-      <!-- Output Grid -->
-      <div class="output-grid">
-        <!-- 1. 오픈시간 -->
-        <div class="info-card">
-          <div class="info-header">
-            <span class="info-icon">🚪</span>
-            <h4>오픈시간</h4>
+    <!-- Main Content Body -->
+    <main class="ct-main">
+      <!-- CatchTable Style Hero Banner -->
+      <section class="ct-hero-banner" id="hero-banner">
+        <div class="hero-bg-overlay"></div>
+        <img src="https://images.unsplash.com/photo-1540189549336-e6e99c3679fe?w=800&auto=format&fit=crop&q=80" alt="추천 맛집 배너" class="hero-img">
+        <div class="hero-content">
+          <span class="hero-tag">#AI 추천 핫플</span>
+          <h2 class="hero-title">당신의 취향에 꼭 맞춘<br>AI 예약 핫플레이스</h2>
+          <p class="hero-desc">실시간 검색과 리뷰로 엄선한 검증 맛집</p>
+          <div class="hero-page-pill">
+            <span>AI PICK</span> <strong>추천 진행중 ›</strong>
           </div>
-          <p id="res-open-time" class="info-text"></p>
+        </div>
+      </section>
+
+      <!-- CatchTable Category Quick Icon Grid (4x5 style) -->
+      <section class="ct-quick-categories">
+        <div class="quick-cat-item" data-preset="줄서기예약">
+          <div class="cat-icon-circle icon-bg-peach">🙌</div>
+          <span>줄서기예약</span>
+        </div>
+        <div class="quick-cat-item" data-preset="2026미쉐린">
+          <div class="cat-icon-circle icon-bg-red">🌸</div>
+          <span>2026미쉐린</span>
+        </div>
+        <div class="quick-cat-item" data-preset="예약핫플">
+          <div class="cat-icon-circle icon-bg-soft">📅<span class="badge-n">★</span></div>
+          <span>예약핫플</span>
+        </div>
+        <div class="quick-cat-item" data-preset="데이트맛집">
+          <div class="cat-icon-circle icon-bg-pink">❤️</div>
+          <span>데이트맛집</span>
+        </div>
+        <div class="quick-cat-item" data-preset="위스키다이닝">
+          <div class="cat-icon-circle icon-bg-amber">🥃</div>
+          <span>위스키다이닝</span>
         </div>
 
-        <!-- 2. 브레이크타임 -->
-        <div class="info-card">
-          <div class="info-header">
-            <span class="info-icon">☕</span>
-            <h4>브레이크타임</h4>
-          </div>
-          <p id="res-break-time" class="info-text"></p>
+        <div class="quick-cat-item" data-preset="지역TOP맛집">
+          <div class="cat-icon-circle icon-bg-brown">🏯<span class="badge-n">N</span></div>
+          <span>지역TOP맛집</span>
+        </div>
+        <div class="quick-cat-item" data-preset="파인다이닝">
+          <div class="cat-icon-circle icon-bg-lavender">💐</div>
+          <span>근사한다이닝</span>
+        </div>
+        <div class="quick-cat-item" data-preset="오마카세">
+          <div class="cat-icon-circle icon-bg-soft">✉️<span class="badge-n">N</span></div>
+          <span>스시오마카세</span>
+        </div>
+        <div class="quick-cat-item" data-preset="우마카세">
+          <div class="cat-icon-circle icon-bg-peach">🥩</div>
+          <span>우마카세</span>
+        </div>
+        <div class="quick-cat-item" data-preset="신상오픈">
+          <div class="cat-icon-circle icon-bg-amber">🏷️<span class="badge-n">N</span></div>
+          <span>신상오픈맛집</span>
         </div>
 
-        <!-- 3. 맛있게 먹는 방법 -->
-        <div class="info-card full-width primary-accent">
-          <div class="info-header">
-            <span class="info-icon">😋</span>
-            <h4>맛있게 먹는 방법</h4>
+        <div class="quick-cat-item" data-preset="웨이팅핫플">
+          <div class="cat-icon-circle icon-bg-soft">⏰</div>
+          <span>웨이팅핫플</span>
+        </div>
+        <div class="quick-cat-item" data-preset="혼밥맛집">
+          <div class="cat-icon-circle icon-bg-lavender">🍽️<span class="badge-n">N</span></div>
+          <span>혼밥맛집</span>
+        </div>
+        <div class="quick-cat-item" data-preset="캐치단독">
+          <div class="cat-icon-circle icon-bg-peach">💎</div>
+          <span>캐치단독</span>
+        </div>
+        <div class="quick-cat-item" data-preset="브랜드혜택">
+          <div class="cat-icon-circle icon-bg-red">🏷️<span class="badge-n">N</span></div>
+          <span>브랜드혜택</span>
+        </div>
+        <div class="quick-cat-item" data-preset="야장지도">
+          <div class="cat-icon-circle icon-bg-amber">🍻<span class="badge-n">N</span></div>
+          <span>야장지도</span>
+        </div>
+      </section>
+
+      <div class="section-divider"></div>
+
+      <!-- Recommendation Input Form Section -->
+      <section id="form-section" class="ct-section">
+        <div class="ct-section-header">
+          <div>
+            <h3 class="ct-section-title">AI 맞춤 조건 설정</h3>
+            <p class="ct-section-sub">원하는 맛집 조건 6가지를 입력하면 맞춤 추천해 드려요</p>
           </div>
-          <p id="res-eating-tips" class="info-text"></p>
+          <span class="badge-tag">실시간 탐색</span>
         </div>
 
-        <!-- 4. 맛집까지 오는길 -->
-        <div class="info-card full-width">
-          <div class="info-header">
-            <span class="info-icon">🗺️</span>
-            <h4>맛집까지 오는길</h4>
+        <form id="restaurant-form" class="ct-card-form">
+          <div class="ct-input-group">
+            <label for="location">📍 맛집 위치 <span class="required-star">*</span></label>
+            <div class="input-with-icon">
+              <input type="text" id="location" placeholder="예: 서울 강남역, 성수동, 부산 해운대" value="강남역" required>
+            </div>
           </div>
-          <p id="res-directions" class="info-text"></p>
+
+          <div class="ct-form-row">
+            <div class="ct-input-group">
+              <label for="operating_hours">⏰ 가게의 운영시간</label>
+              <input type="text" id="operating_hours" placeholder="예: 11:30 ~ 21:30" value="11:30 ~ 21:30">
+            </div>
+            <div class="ct-input-group">
+              <label for="avg_price">💰 메뉴 평균가격 <span class="required-star">*</span></label>
+              <input type="text" id="avg_price" placeholder="예: 15,000원" value="15,000원 ~ 20,000원" required>
+            </div>
+          </div>
+
+          <div class="ct-form-row">
+            <div class="ct-input-group">
+              <label for="best_menu">⭐ 제일 평이 좋은 메뉴 <span class="required-star">*</span></label>
+              <input type="text" id="best_menu" placeholder="예: 마제소바, 뇨끼, 안심카츠" value="마제소바" required>
+            </div>
+            <div class="ct-input-group">
+              <label for="avg_waiting">⏳ 평균 웨이팅 시간 <span class="required-star">*</span></label>
+              <input type="text" id="avg_waiting" placeholder="예: 20분 내외" value="약 20분" required>
+            </div>
+          </div>
+
+          <div class="ct-input-group">
+            <label for="representative_menus">🍲 맛집 대표 메뉴들 <span class="required-star">*</span></label>
+            <input type="text" id="representative_menus" placeholder="예: 마제소바, 아부라소바, 교자" value="마제소바, 아부라소바, 교자" required>
+          </div>
+
+          <button type="submit" id="submit-btn" class="ct-submit-btn">
+            <span>✨ AI 실시간 맛집 추천받기</span>
+          </button>
+        </form>
+      </section>
+
+      <!-- Loading Section -->
+      <section id="loading-section" class="ct-section" style="display: none;">
+        <div class="ct-loading-box">
+          <div class="ct-spinner"></div>
+          <h4>캐치 AI가 맞춤 맛집을 탐색 중입니다...</h4>
+          <p class="ct-loading-sub">Gemini가 최적의 가이드를 생성하고, 웹에서 실시간 음식 사진을 수집하고 있습니다.</p>
+        </div>
+      </section>
+
+      <!-- Result Section -->
+      <section id="result-section" class="ct-section" style="display: none;">
+        <div class="ct-result-header">
+          <span class="ct-result-chip">AI PICK 추천 맛집</span>
+          <h2 id="result-name" class="ct-restaurant-name">추천 맛집</h2>
+          <div class="ct-rating-row">
+            <span class="stars">★★★★★</span>
+            <span class="score">4.9</span>
+            <span class="review-count">(리뷰 3,420개)</span>
+          </div>
         </div>
 
-        <!-- 5. 리뷰 -->
-        <div class="info-card full-width">
-          <div class="info-header">
-            <span class="info-icon">💬</span>
-            <h4>방문객 총평 리뷰</h4>
+        <!-- Best Menu Photo Gallery (Real Food Web Images) -->
+        <div class="ct-gallery-container">
+          <div class="gallery-head">
+            <span class="gallery-icon">📸</span>
+            <h4 id="gallery-title">제일 평이 좋은 메뉴 실시간 검색 사진</h4>
           </div>
-          <p id="res-review" class="info-text"></p>
+          <div class="ct-image-scroll" id="menu-image-grid">
+            <!-- Dynamically populated with real photos -->
+          </div>
         </div>
 
-        <!-- 6. 주의사항 -->
-        <div class="info-card full-width caution-box">
-          <div class="info-header">
-            <span class="info-icon">⚠️</span>
-            <h4>방문 시 주의사항</h4>
+        <!-- Detail Information Cards Grid -->
+        <div class="ct-info-grid">
+          <!-- 1. 오픈시간 -->
+          <div class="ct-info-card">
+            <div class="card-icon-title">
+              <span class="icon">🚪</span>
+              <strong>오픈시간</strong>
+            </div>
+            <p id="res-open-time" class="card-desc highlight-time"></p>
           </div>
-          <p id="res-precautions" class="info-text"></p>
+
+          <!-- 2. 브레이크타임 -->
+          <div class="ct-info-card">
+            <div class="card-icon-title">
+              <span class="icon">☕</span>
+              <strong>브레이크타임</strong>
+            </div>
+            <p id="res-break-time" class="card-desc highlight-time"></p>
+          </div>
+
+          <!-- 3. 맛있게 먹는 방법 -->
+          <div class="ct-info-card span-2 highlight-card">
+            <div class="card-icon-title">
+              <span class="icon">😋</span>
+              <strong>맛있게 먹는 방법</strong>
+            </div>
+            <p id="res-eating-tips" class="card-desc"></p>
+          </div>
+
+          <!-- 4. 맛집까지 오는길 -->
+          <div class="ct-info-card span-2">
+            <div class="card-icon-title">
+              <span class="icon">🗺️</span>
+              <strong>맛집까지 오는길</strong>
+            </div>
+            <p id="res-directions" class="card-desc"></p>
+          </div>
+
+          <!-- 5. 리뷰 -->
+          <div class="ct-info-card span-2">
+            <div class="card-icon-title">
+              <span class="icon">💬</span>
+              <strong>방문객 솔직 리뷰</strong>
+            </div>
+            <p id="res-review" class="card-desc"></p>
+          </div>
+
+          <!-- 6. 주의사항 -->
+          <div class="ct-info-card span-2 caution-card">
+            <div class="card-icon-title">
+              <span class="icon">⚠️</span>
+              <strong>방문 전 체크사항</strong>
+            </div>
+            <p id="res-precautions" class="card-desc"></p>
+          </div>
         </div>
+
+        <!-- Real-time Serper Links -->
+        <div class="ct-serper-section" id="serper-container" style="display: none;">
+          <h4 class="ct-sub-title">🔗 실시간 포털 검색 연동 정보</h4>
+          <div id="serper-list" class="ct-serper-links"></div>
+        </div>
+
+        <!-- Action CTA Buttons -->
+        <div class="ct-action-buttons">
+          <button id="copy-btn" class="ct-btn-share">결과 공유 / 복사</button>
+          <button id="restart-btn" class="ct-btn-retry">다른 조건으로 찾기</button>
+        </div>
+
+        <div id="toast" class="ct-toast">맛집 리포트가 클립보드에 복사되었습니다!</div>
+      </section>
+
+      <!-- Error Toast -->
+      <div id="error-message" class="ct-error-banner" style="display: none;"></div>
+    </main>
+
+    <!-- CatchTable Bottom Navigation Bar -->
+    <nav class="ct-bottom-nav">
+      <div class="nav-item active">
+        <span class="nav-icon">🏠</span>
+        <span class="nav-label">홈</span>
       </div>
-
-      <!-- Real-time Serper Info -->
-      <div class="serper-wrapper" id="serper-container" style="display: none;">
-        <div class="section-title">
-          <span class="icon">🔍</span>
-          <h3>실시간 웹 검색 연동 정보</h3>
-        </div>
-        <div id="serper-list" class="serper-list"></div>
+      <div class="nav-item">
+        <span class="nav-icon">🔖</span>
+        <span class="nav-label">저장</span>
       </div>
-
-      <!-- Action Buttons -->
-      <div class="result-actions">
-        <button id="copy-btn" class="btn btn-secondary">결과 복사하기</button>
-        <button id="restart-btn" class="btn btn-primary">다른 조건으로 추천받기</button>
+      <div class="nav-item">
+        <span class="nav-icon">📍</span>
+        <span class="nav-label">내 주변</span>
       </div>
-
-      <div id="toast" class="toast">결과 정보가 클립보드에 복사되었습니다!</div>
-    </section>
-
-    <!-- Error Banner -->
-    <div id="error-message" class="error-banner" style="display: none;"></div>
+      <div class="nav-item">
+        <span class="nav-icon badge-wrapper">📅<span class="bottom-badge">N</span></span>
+        <span class="nav-label">마이다이닝</span>
+      </div>
+      <div class="nav-item">
+        <span class="nav-icon">👤</span>
+        <span class="nav-label">MY</span>
+      </div>
+    </nav>
   </div>
 
   <script src="/static/js/app.js"></script>
